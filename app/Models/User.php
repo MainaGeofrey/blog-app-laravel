@@ -46,4 +46,22 @@ class User extends Authenticatable
     {
         return $this->hasMany('App\Models\Blog');
     }
+
+    //returns User relationship with Profile model
+    public function profiles()
+    {
+        return $this->belongsToMany('App\Models\UserManagement\Profile')->withTimestamps();
+    }
+
+    //the 2 methods below can also be in the controller
+    public function assignProfile($profile)
+    {
+        return $this->profile()->sync($profile);
+    }
+
+    public function permissions()
+    {
+        //return an array of permissions
+        return $this->profiles->map->permissions->flatten()->pluck('name')->unique();
+    }
 }

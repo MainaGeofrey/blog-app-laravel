@@ -40,7 +40,8 @@ class UserPolicy
      */
     public function create(User $user)
     {
-        //
+        //Return true if the user can update the model
+        return $user->permissions()->contains('create_users');
     }
 
     /**
@@ -50,9 +51,12 @@ class UserPolicy
      * @param  \App\Models\User  $model
      * @return \Illuminate\Auth\Access\Response|bool
      */
-    public function update(User $user, User $model)
+    public function update(User $authenticatedUser, User $user)
     {
-        //
+        //Return true if the authenticated user has the same id with the same id with with specified model/user id
+        //or has permission to update-user
+
+        return $authenticatedUser->id === $user->id || $authenticatedUser->permissions()->contains('update_user');
     }
 
     /**
@@ -64,7 +68,8 @@ class UserPolicy
      */
     public function delete(User $user, User $model)
     {
-        //
+        //Return true if authenticated user has permission to delete-user
+        return $user->permissions()->contains('delete_user');
     }
 
     /**

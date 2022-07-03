@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\UserController;
 
 /*
 |--------------------------------------------------------------------------
@@ -22,3 +23,8 @@ Route::get('/dashboard', function () {
 })->middleware(['auth'])->name('dashboard');
 
 require __DIR__.'/auth.php';
+
+
+Route::get('/create/user', [UserController::class, 'create'])->name('create-user');
+Route::post('/delete/user{user}', [UserController::class, 'destroy'])->name('delete-user');
+Route::get('/update/user/{user}', [UserController::class, 'edit'])->name('update-user');
