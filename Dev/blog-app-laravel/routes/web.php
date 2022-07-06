@@ -1,7 +1,13 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\UserController;
+
+use App\Http\Controllers\UserManagement\UserController;
+use App\Http\Controllers\UserManagement\RoleController;
+use App\Http\Controllers\UserManagement\PermissionController;
+use App\Http\Controllers\Blog\BlogController;
+//use App\Http\Controllers\Blog\ImageUploadController;
+use App\Http\Controllers\ImageUploadController;
 
 /*
 |--------------------------------------------------------------------------
@@ -15,7 +21,7 @@ use App\Http\Controllers\UserController;
 */
 
 Route::get('/', function () {
-    return view('welcome');
+    return view('home');
 });
 
 Route::get('/dashboard', function () {
@@ -25,6 +31,25 @@ Route::get('/dashboard', function () {
 require __DIR__.'/auth.php';
 
 
-Route::get('/create/user', [UserController::class, 'create'])->name('create-user');
-Route::post('/delete/user{user}', [UserController::class, 'destroy'])->name('delete-user');
-Route::get('/update/user/{user}', [UserController::class, 'edit'])->name('update-user');
+Route::group(['middleware' => ['auth']], function() {
+    Route::resource('users', UserController::class);
+    Route::resource('roles', RoleController::class);
+    Route::resource('permissions', PermissionController::class);
+
+    Route::resource('blogs', BlogController::class);
+});
+
+
+
+
+//Route::get('image-upload', [ ImageUploadController::class, 'imageUpload' ])->name('image.upload');
+//Route::post('image-upload', [ ImageUploadController::class, 'imageUploadPost' ])->name('image.upload.post');
+
+//For adding an image
+Route::get('/add-image',[ImageUploadController::class,'addImage'])->name('images.add');
+
+//For storing an image
+Route::post('/store-image',[ImageUploadController::class,'storeImage'])->name('images.store');
+
+//For showing an image
+Route::get('/view-image',[ImageUploadController::class,'viewImage'])->name('images.view');

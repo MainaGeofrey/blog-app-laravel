@@ -1,15 +1,13 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Http\Controllers\Blog;
 
-use App\Http\Controllers\Api\BaseController;
-use App\Http\Resources\BlogResource;
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Blog;
 use Illuminate\Support\Facades\Validator;
 
-class BlogController extends BaseController
-
+class BlogController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -19,8 +17,19 @@ class BlogController extends BaseController
     public function index()
     {
         //
-        $blogs = Blog::all();
-        return $this->successResponse(BlogResource::collection($blogs), 'Posts fetched successfully', 200);
+        $data = Blog::orderBy('id', 'desc')->paginate(7);
+        return view('blog.index', compact('data'));
+    }
+
+    /**
+     * Show the form for creating a new resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function create()
+    {
+        //
+        return view('blog.create');
     }
 
     /**
@@ -33,7 +42,6 @@ class BlogController extends BaseController
     {
         //
         $input = $request->all();
-        
         $input ['user_id'] = auth()->user()->id;
 
         $validator = Validator::make($input, [
@@ -43,11 +51,14 @@ class BlogController extends BaseController
         ]);
 
         if ($validator->fails()) {
-            return $this->errorResponse(['error' => $validator->errors()], 422);
+            return redirect()->route('blog.create')->withErrors($validator)->withInput();
+        }
+        else
+        {
+            $blog = Blog::create($input);
+            return redirect()->route('blog.index')->with('success', 'Post created successfully');
         }
 
-        $blog = Blog::create($input);
-        return $this->successResponse(new BlogResource($blog), 'Post created successfully', 201);
     }
 
     /**
@@ -56,14 +67,24 @@ class BlogController extends BaseController
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show(Blog  $blog)
     {
         //
-        $blog = Blog::find($id);
-        if (is_null($blog)) {
-            return $this->errorResponse(['error' => 'Post not found'], 404);
-        }
-        return $this->successResponse(new BlogResource($blog), 'Post fetched successfully', 200);
+        return view('blog.show', compact('blog'));
+
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function edit(Blog $blog)
+    {
+        //
+        return view('blog.edit', compact('blog'));
+
     }
 
     /**
@@ -77,7 +98,6 @@ class BlogController extends BaseController
     {
         //
         $input = $request->all();
-
         $validator = Validator::make($input, [
             'title' => 'required',
             'content' => 'required',
@@ -85,18 +105,13 @@ class BlogController extends BaseController
         ]);
 
         if ($validator->fails()) {
-            return $this->errorResponse(['error' => $validator->errors()], 422);
-
+            return redirect()->route('blog.edit', $blog->id)->withErrors($validator)->withInput();
         }
-
-        $blog->title = $input['title'];
-        $blog->content = $input['content'];
-        $blog->description = $input['description'];
-        $blog->save();
-
-        return $this->successResponse(new BlogResource($blog), 'Post updated successfully', 200);
-
-
+        else
+        {
+            $blog->update($input);
+            return redirect()->route('blog.index')->with('success', 'Post updated successfully');
+        }
     }
 
     /**
@@ -109,7 +124,6 @@ class BlogController extends BaseController
     {
         //
         $blog->delete();
-        return $this->successResponse(new BlogResource($blog), 'Post deleted successfully', 200);
+        return redirect()->route('blog.index')->with('success', 'Post deleted successfully');
     }
-
 }
